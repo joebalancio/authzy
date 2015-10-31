@@ -66,7 +66,7 @@ describe('Authorizer', () => {
 			authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {})
 			expect(authorizer.polls).to.have.length(1)
 			authorizer.polls.forEach((poll, config) => {
-				expect(poll).to.have.deep.property('options.strategy', constants.AFFIRMATIVE)
+				expect(poll).to.have.property('strategy', constants.AFFIRMATIVE)
 			})
 		})
 		it('throws an error when voters are not given', () => {
@@ -168,7 +168,7 @@ describe('Authorizer', () => {
 				.then(() => {
 					expect(spy.called).to.be.true
 					const poll = spy.firstCall.returnValue
-					expect(poll.options.strategy).to.equal(constants.CONSENSUS)
+					expect(poll.strategy).to.equal(constants.CONSENSUS)
 				})
 		})
 		it('decides by the affirmative strategy', () => {
@@ -183,7 +183,7 @@ describe('Authorizer', () => {
 				.then(() => {
 					expect(spy.called).to.be.true
 					const poll = spy.firstCall.returnValue
-					expect(poll.options.strategy).to.equal(constants.AFFIRMATIVE)
+					expect(poll.strategy).to.equal(constants.AFFIRMATIVE)
 				})
 		})
 		it('decides by the unanimous strategy', () => {
@@ -198,7 +198,7 @@ describe('Authorizer', () => {
 				.then(() => {
 					expect(spy.called).to.be.true
 					const poll = spy.firstCall.returnValue
-					expect(poll.options.strategy).to.equal(constants.UNANIMOUS)
+					expect(poll.strategy).to.equal(constants.UNANIMOUS)
 				})
 		})
 	})
