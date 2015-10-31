@@ -5,6 +5,7 @@ const chai = require('chai')
 const expect = chai.expect
 
 const Authorizer = require('../lib/Authorizer')
+const constants = require('../lib/constants')
 
 describe('Authorizer', () => {
 	describe('constructor', () => {
@@ -107,6 +108,50 @@ describe('Authorizer', () => {
 		})
 	})
 	describe('#decide', () => {
-		it('decides')
+		let authorizer
+		beforeEach(() => {
+			authorizer = new Authorizer()
+		})
+		it('returns false by default when no polls are matched', () => {
+			return authorizer.decide()
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.false
+				})
+		})
+		it('resolves with true when a matched poll allow', () => {
+			authorizer.registerVoter('isAdmin', () => {
+				return constants.ALLOW
+			})
+			authorizer.registerPoll(null, null, null, ['isAdmin'])
+
+			return authorizer.decide()
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.true
+				})
+		})
+		it('rejects with error when a voter fails', () => {
+			authorizer.registerVoter('isAdmin', () => {
+				throw Error('external failure')
+			})
+			authorizer.registerPoll(null, null, null, ['isAdmin'])
+
+			return authorizer.decide()
+				.reflect()
+				.then((i) => {
+					expect(i.isRejected()).to.be.true
+					expect(i.reason()).to.have.property('message', 'external failure')
+				})
+		})
+		it('decides by the consensus strategy')
+		it('decides by the affirmative strategy')
+		it('decides by the unanimous strategy')
+	})
+	describe('#findVoters', () => {
+		it('returns voters if found')
+		it('returns null if not found')
 	})
 })
