@@ -6,6 +6,7 @@ const expect = chai.expect
 
 const authz = require('../')
 const Authorizer = require('../lib/Authorizer')
+const constants = require('../lib/constants')
 
 describe('authz', () => {
 	describe('create', () => {
@@ -23,5 +24,9 @@ describe('authz', () => {
 			expect(authorizer).to.have.property('options')
 				.that.is.an('object')
 		})
+	})
+	it('exports constants', () => {
+		expect(authz.constants).to.equal(constants)
+		expect(Object.isFrozen(constants)).to.be.true
 	})
 })
