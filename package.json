@@ -1,0 +1,32 @@
+{
+  "name": "authz",
+  "version": "1.0.0",
+  "description": "Voting-based Authorization",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --recursive test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joebalancio/authz.git"
+  },
+  "keywords": [
+    "authorization",
+    "security",
+    "authz"
+  ],
+  "author": {
+    "name": "Joseph Balancio",
+    "email": "jlbalancio@gmail.com",
+    "url": "http://joebalancio.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joebalancio/authz/issues"
+  },
+  "homepage": "https://github.com/joebalancio/authz#readme",
+  "devDependencies": {
+    "chai": "^3.4.0",
+    "mocha": "^2.3.3"
+  }
+}
