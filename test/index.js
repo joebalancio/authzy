@@ -18,5 +18,10 @@ describe('authz', () => {
 			expect(authorizer).to.have.property('options')
 				.that.has.property('foo', 'bar')
 		})
+		it('passes empty options object to Authorizer', () => {
+			const authorizer = authz()
+			expect(authorizer).to.have.property('options')
+				.that.is.an('object')
+		})
 	})
 })
