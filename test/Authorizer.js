@@ -24,8 +24,8 @@ describe('Authorizer', () => {
 		it('creates empty polls', () => {
 			const authorizer = new Authorizer()
 			expect(authorizer).to.have.property('polls')
-				.that.is.an.instanceof(Map)
-				.and.has.property('size', 0)
+				.that.is.an.instanceof(Array)
+				.and.is.empty
 		})
 	})
 	describe('#registerVoter', () => {
@@ -62,11 +62,11 @@ describe('Authorizer', () => {
 		})
 		it('registers a poll', () => {
 			authorizer.registerVoter('isProjectOwner', () => {})
-			expect(authorizer.polls).to.have.property('size', 0)
+			expect(authorizer.polls).to.have.length(0)
 			authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {})
-			expect(authorizer.polls).to.have.property('size', 1)
-			authorizer.polls.forEach((voters, config) => {
-				expect(config).to.have.deep.property('options.strategy', constants.AFFIRMATIVE)
+			expect(authorizer.polls).to.have.length(1)
+			authorizer.polls.forEach((poll, config) => {
+				expect(poll).to.have.deep.property('options.strategy', constants.AFFIRMATIVE)
 			})
 		})
 		it('throws an error when voters are not given', () => {
@@ -168,7 +168,7 @@ describe('Authorizer', () => {
 				.then(() => {
 					expect(spy.called).to.be.true
 					const poll = spy.firstCall.returnValue
-					expect(poll.config.options.strategy).to.equal(constants.CONSENSUS)
+					expect(poll.options.strategy).to.equal(constants.CONSENSUS)
 				})
 		})
 		it('decides by the affirmative strategy', () => {
@@ -183,7 +183,7 @@ describe('Authorizer', () => {
 				.then(() => {
 					expect(spy.called).to.be.true
 					const poll = spy.firstCall.returnValue
-					expect(poll.config.options.strategy).to.equal(constants.AFFIRMATIVE)
+					expect(poll.options.strategy).to.equal(constants.AFFIRMATIVE)
 				})
 		})
 		it('decides by the unanimous strategy', () => {
@@ -198,7 +198,7 @@ describe('Authorizer', () => {
 				.then(() => {
 					expect(spy.called).to.be.true
 					const poll = spy.firstCall.returnValue
-					expect(poll.config.options.strategy).to.equal(constants.UNANIMOUS)
+					expect(poll.options.strategy).to.equal(constants.UNANIMOUS)
 				})
 		})
 	})
@@ -211,7 +211,7 @@ describe('Authorizer', () => {
 			})
 		})
 		it('returns false by default when no polls are matched', () => {
-			expect(authorizer.findPoll()).to.be.false
+			expect(authorizer.findPoll()).to.be.undefined
 		})
 		it('returns poll if matched', () => {
 			authorizer.registerPoll('user', 'edit', 'page', ['allow', 'allow'])
