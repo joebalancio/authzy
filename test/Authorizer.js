@@ -3,7 +3,6 @@
 
 const chai = require('chai')
 const expect = chai.expect
-const P = require('bluebird')
 
 const Authorizer = require('../lib/Authorizer')
 
@@ -39,35 +38,16 @@ describe('Authorizer', () => {
 			const voter = () => {}
 			expect(authorizer.voters.size).to.equal(0)
 
-			return authorizer.registerVoter('dummy', voter)
-			.reflect()
-			.then((i) => {
-				expect(i.isFulfilled()).to.be.true
-				expect(i.value()).to.equal(voter)
-				expect(authorizer.voters.size).to.equal(1)
-			})
-		})
-		it('returns a promise', () => {
-			expect(authorizer.registerVoter('dummy', () => {}))
-				.to.be.an.instanceof(P)
+			authorizer.registerVoter('dummy', voter)
+			expect(authorizer.voters.size).to.equal(1)
 		})
 		it('throws error if voter is not a function', () => {
-			return authorizer.registerVoter('dummy', true)
-			.reflect()
-			.then((i) => {
-				expect(i.isRejected()).to.be.true
-				expect(i.reason()).to.be.an.instanceof(Error)
-				.and.has.property('message', 'Voter must be a function')
-			})
+			const fn = authorizer.registerVoter.bind(authorizer, 'dummy', true)
+			expect(fn).to.throw(Error, /Voter must be a function/)
 		})
 		it('throws error if name is not a function', () => {
-			return authorizer.registerVoter(true, true)
-			.reflect()
-			.then((i) => {
-				expect(i.isRejected()).to.be.true
-				expect(i.reason()).to.be.an.instanceof(Error)
-				.and.has.property('message', 'Name must be a string')
-			})
+			const fn = authorizer.registerVoter.bind(authorizer, true, true)
+			expect(fn).to.throw(Error, /Name must be a string/)
 		})
 	})
 	describe('#registerPoll', () => {
@@ -78,58 +58,29 @@ describe('Authorizer', () => {
 		it('responds to method', () => {
 			expect(authorizer).to.respondTo('registerPoll')
 		})
-		it('returns a promise', () => {
-			expect(authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {}))
-			.to.be.an.instanceof(P)
-		})
 		it('registers a poll', () => {
-			return authorizer.registerVoter('isProjectOwner', () => {})
-			.then(() => {
-				expect(authorizer.polls).to.have.property('size', 0)
-				return authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {})
-			})
-			.reflect()
-			.then((i) => {
-				expect(i.isFulfilled()).to.be.true
-				expect(i.value()).to.equal(authorizer)
-				expect(authorizer.polls).to.have.property('size', 1)
-			})
+			authorizer.registerVoter('isProjectOwner', () => {})
+			expect(authorizer.polls).to.have.property('size', 0)
+			authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {})
+			expect(authorizer.polls).to.have.property('size', 1)
 		})
-		it('rejects when voters are not given', () => {
-			return authorizer.registerPoll('user', 'edit', 'project', null, {})
-			.reflect()
-			.then((i) => {
-				expect(i.isRejected()).to.be.true
-				expect(i.reason()).to.be.an.instanceof(Error)
-				.and.has.property('message', 'Voters are required')
-			})
+		it('throws an error when voters are not given', () => {
+			const fn = authorizer.registerPoll.bind(authorizer, 'user', 'edit', 'project', null, {})
+			expect(fn).to.throw(Error, /Voters are required/)
 		})
-		it('rejects when voters are not an array', () => {
-			return authorizer.registerPoll('user', 'edit', 'project', true, {})
-			.reflect()
-			.then((i) => {
-				expect(i.isRejected()).to.be.true
-				expect(i.reason()).to.be.an.instanceof(Error)
-				.and.has.property('message', 'Voters must be an array')
-			})
+		it('throws an error when voters are not an array', () => {
+			const fn = authorizer.registerPoll.bind(authorizer, 'user', 'edit', 'project', true, {})
+			expect(fn).to.throw(Error, /Voters must be an array/)
 		})
-		it('rejects when voters are empty', () => {
-			return authorizer.registerPoll('user', 'edit', 'project', [], {})
-			.reflect()
-			.then((i) => {
-				expect(i.isRejected()).to.be.true
-				expect(i.reason()).to.be.an.instanceof(Error)
-				.and.has.property('message', 'Voters must not be empty')
-			})
+		it('throws an error when voters are empty', () => {
+			const fn = authorizer.registerPoll.bind(authorizer, 'user', 'edit', 'project', [], {})
+			expect(fn).to.throw(Error, /Voters must not be empty/)
 		})
-		it('rejects when a voter does not exist', () => {
-			return authorizer.registerPoll('user', 'edit', 'project', ['bad', 'anotherbad'], {})
-			.reflect()
-			.then((i) => {
-				expect(i.isRejected()).to.be.true
-				expect(i.reason()).to.be.an.instanceof(Error)
-				.and.has.property('message', 'Voter does not exist: bad,anotherbad')
-			})
+		it('throws an error when a voter does not exist', () => {
+			const fn = authorizer.registerPoll.bind(
+				authorizer, 'user', 'edit', 'project', ['bad', 'anotherbad'], {}
+			)
+			expect(fn).to.throw(Error, /Voter does not exist: bad,anotherbad/)
 		})
 	})
 	describe('#registerContextResolver', () => {
