@@ -18,7 +18,13 @@ describe('Authorizer', () => {
 			const authorizer = new Authorizer()
 			expect(authorizer).to.have.property('voters')
 				.that.is.an.instanceof(Map)
-				.and.is.empty
+				.and.has.property('size', 0)
+		})
+		it('creates empty polls', () => {
+			const authorizer = new Authorizer()
+			expect(authorizer).to.have.property('polls')
+				.that.is.an.instanceof(Map)
+				.and.has.property('size', 0)
 		})
 	})
 	describe('#registerVoter', () => {
@@ -65,7 +71,66 @@ describe('Authorizer', () => {
 		})
 	})
 	describe('#registerPoll', () => {
-		it('registers a poll')
+		let authorizer
+		beforeEach(() => {
+			authorizer = new Authorizer()
+		})
+		it('responds to method', () => {
+			expect(authorizer).to.respondTo('registerPoll')
+		})
+		it('returns a promise', () => {
+			expect(authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {}))
+			.to.be.an.instanceof(P)
+		})
+		it('registers a poll', () => {
+			return authorizer.registerVoter('isProjectOwner', () => {})
+			.then(() => {
+				expect(authorizer.polls).to.have.property('size', 0)
+				return authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {})
+			})
+			.reflect()
+			.then((i) => {
+				expect(i.isFulfilled()).to.be.true
+				expect(i.value()).to.equal(authorizer)
+				expect(authorizer.polls).to.have.property('size', 1)
+			})
+		})
+		it('rejects when voters are not given', () => {
+			return authorizer.registerPoll('user', 'edit', 'project', null, {})
+			.reflect()
+			.then((i) => {
+				expect(i.isRejected()).to.be.true
+				expect(i.reason()).to.be.an.instanceof(Error)
+				.and.has.property('message', 'Voters are required')
+			})
+		})
+		it('rejects when voters are not an array', () => {
+			return authorizer.registerPoll('user', 'edit', 'project', true, {})
+			.reflect()
+			.then((i) => {
+				expect(i.isRejected()).to.be.true
+				expect(i.reason()).to.be.an.instanceof(Error)
+				.and.has.property('message', 'Voters must be an array')
+			})
+		})
+		it('rejects when voters are empty', () => {
+			return authorizer.registerPoll('user', 'edit', 'project', [], {})
+			.reflect()
+			.then((i) => {
+				expect(i.isRejected()).to.be.true
+				expect(i.reason()).to.be.an.instanceof(Error)
+				.and.has.property('message', 'Voters must not be empty')
+			})
+		})
+		it('rejects when a voter does not exist', () => {
+			return authorizer.registerPoll('user', 'edit', 'project', ['bad', 'anotherbad'], {})
+			.reflect()
+			.then((i) => {
+				expect(i.isRejected()).to.be.true
+				expect(i.reason()).to.be.an.instanceof(Error)
+				.and.has.property('message', 'Voter does not exist: bad,anotherbad')
+			})
+		})
 	})
 	describe('#registerContextResolver', () => {
 		it('registers a context resolver')
