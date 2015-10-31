@@ -202,8 +202,20 @@ describe('Authorizer', () => {
 				})
 		})
 	})
-	describe('#findVoters', () => {
-		it('returns voters if found')
-		it('returns null if not found')
+	describe('#findPoll', () => {
+		let authorizer
+		beforeEach(() => {
+			authorizer = new Authorizer()
+			authorizer.registerVoter('allow', () => {
+				return constants.ALLOW
+			})
+		})
+		it('returns false by default when no polls are matched', () => {
+			expect(authorizer.findPoll()).to.be.false
+		})
+		it('returns poll if matched', () => {
+			authorizer.registerPoll('user', 'edit', 'page', ['allow', 'allow'])
+			expect(authorizer.findPoll('user', 'edit', 'page')).to.exist
+		})
 	})
 })
