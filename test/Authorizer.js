@@ -83,27 +83,27 @@ describe('Authorizer', () => {
 			expect(fn).to.throw(Error, /Voter does not exist: bad,anotherbad/)
 		})
 	})
-	describe('#registerContextResolver', () => {
+	describe('#registerContextParser', () => {
 		let authorizer
 		beforeEach(() => {
 			authorizer = new Authorizer()
 		})
-		it('has a default context resolver', () => {
-			expect(authorizer).to.have.property('contextResolver')
+		it('has a default context parser', () => {
+			expect(authorizer).to.have.property('contextParser')
 				.that.is.an.instanceof(Function)
-			expect(authorizer.contextResolver(1, 2, 3)).to.equal(1)
+			expect(authorizer.contextParser(1, 2, 3)).to.equal(1)
 		})
 		it('responds to method', () => {
-			expect(authorizer).to.respondTo('registerContextResolver')
+			expect(authorizer).to.respondTo('registerContextParser')
 		})
-		it('registers a context resolver', () => {
-			const resolver = () => {}
-			authorizer.registerContextResolver(resolver)
-			expect(authorizer.contextResolver).to.equal(resolver)
+		it('registers a context parser', () => {
+			const parser = () => {}
+			authorizer.registerContextParser(parser)
+			expect(authorizer.contextParser).to.equal(parser)
 		})
-		it('throws an error when resolver is not a function', () => {
-			const fn = authorizer.registerContextResolver.bind(authorizer, true)
-			expect(fn).to.throw(Error, /Resolver must be a function/)
+		it('throws an error when parser is not a function', () => {
+			const fn = authorizer.registerContextParser.bind(authorizer, true)
+			expect(fn).to.throw(Error, /Parser must be a function/)
 		})
 	})
 	describe('#decide', () => {
