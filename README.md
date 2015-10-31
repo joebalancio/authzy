@@ -1,9 +1,9 @@
-# Authz
+# Authzy
 
-[![Build Status](https://travis-ci.org/joebalancio/authz.svg)](https://travis-ci.org/joebalancio/authz)
+[![Build Status](https://travis-ci.org/joebalancio/authzy.svg)](https://travis-ci.org/joebalancio/authzy)
 
 ## API
-### `authz.create(options)`
+### `authzy.create(options)`
 Creates an `authorizer`. An authorizer can pass in options that affect the `authorizer` globally.
 
 ### `authorizer.registerVoter(name, voter)`

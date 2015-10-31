@@ -1,5 +1,5 @@
 {
-  "name": "authz",
+  "name": "authzy",
   "version": "1.0.0",
   "description": "Voting-based Authorization",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joebalancio/authz.git"
+    "url": "git+https://github.com/joebalancio/authzy.git"
   },
   "keywords": [
     "authorization",
@@ -22,9 +22,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/joebalancio/authz/issues"
+    "url": "https://github.com/joebalancio/authzy/issues"
   },
-  "homepage": "https://github.com/joebalancio/authz#readme",
+  "homepage": "https://github.com/joebalancio/authzy#readme",
   "devDependencies": {
     "chai": "^3.4.0",
     "mocha": "^2.3.3",
