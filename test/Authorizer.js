@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 const expect = chai.expect
+const sinon = require('sinon')
 
 const Authorizer = require('../lib/Authorizer')
 const constants = require('../lib/constants')
@@ -114,6 +115,18 @@ describe('Authorizer', () => {
 		let authorizer
 		beforeEach(() => {
 			authorizer = new Authorizer()
+			authorizer.registerVoter('error', () => {
+				throw Error('external failure')
+			})
+			authorizer.registerVoter('allow', () => {
+				return constants.ALLOW
+			})
+			authorizer.registerVoter('deny', () => {
+				return constants.DENY
+			})
+			authorizer.registerVoter('abstain', () => {
+				return constants.ABSTAIN
+			})
 		})
 		it('returns false by default when no polls are matched', () => {
 			return authorizer.decide()
@@ -124,10 +137,7 @@ describe('Authorizer', () => {
 				})
 		})
 		it('resolves with true when a matched poll allow', () => {
-			authorizer.registerVoter('isAdmin', () => {
-				return constants.ALLOW
-			})
-			authorizer.registerPoll(null, null, null, ['isAdmin'])
+			authorizer.registerPoll(null, null, null, ['allow'])
 
 			return authorizer.decide()
 				.reflect()
@@ -137,10 +147,7 @@ describe('Authorizer', () => {
 				})
 		})
 		it('rejects with error when a voter fails', () => {
-			authorizer.registerVoter('isAdmin', () => {
-				throw Error('external failure')
-			})
-			authorizer.registerPoll(null, null, null, ['isAdmin'])
+			authorizer.registerPoll(null, null, null, ['error'])
 
 			return authorizer.decide()
 				.reflect()
@@ -149,9 +156,51 @@ describe('Authorizer', () => {
 					expect(i.reason()).to.have.property('message', 'external failure')
 				})
 		})
-		it('decides by the consensus strategy')
-		it('decides by the affirmative strategy')
-		it('decides by the unanimous strategy')
+		it('decides by the consensus strategy', () => {
+			authorizer.registerPoll(null, null, null, ['allow', 'allow'], {
+				strategy: constants.CONSENSUS,
+			})
+
+			const spy = sinon.spy(authorizer, 'findPoll')
+
+			return authorizer.decide()
+				.reflect()
+				.then(() => {
+					expect(spy.called).to.be.true
+					const poll = spy.firstCall.returnValue
+					expect(poll.config.options.strategy).to.equal(constants.CONSENSUS)
+				})
+		})
+		it('decides by the affirmative strategy', () => {
+			authorizer.registerPoll(null, null, null, ['allow', 'allow'], {
+				strategy: constants.AFFIRMATIVE,
+			})
+
+			const spy = sinon.spy(authorizer, 'findPoll')
+
+			return authorizer.decide()
+				.reflect()
+				.then(() => {
+					expect(spy.called).to.be.true
+					const poll = spy.firstCall.returnValue
+					expect(poll.config.options.strategy).to.equal(constants.AFFIRMATIVE)
+				})
+		})
+		it('decides by the unanimous strategy', () => {
+			authorizer.registerPoll(null, null, null, ['allow', 'allow'], {
+				strategy: constants.UNANIMOUS,
+			})
+
+			const spy = sinon.spy(authorizer, 'findPoll')
+
+			return authorizer.decide()
+				.reflect()
+				.then(() => {
+					expect(spy.called).to.be.true
+					const poll = spy.firstCall.returnValue
+					expect(poll.config.options.strategy).to.equal(constants.UNANIMOUS)
+				})
+		})
 	})
 	describe('#findVoters', () => {
 		it('returns voters if found')
