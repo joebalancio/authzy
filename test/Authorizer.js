@@ -64,6 +64,9 @@ describe('Authorizer', () => {
 			expect(authorizer.polls).to.have.property('size', 0)
 			authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {})
 			expect(authorizer.polls).to.have.property('size', 1)
+			authorizer.polls.forEach((voters, config) => {
+				expect(config).to.have.deep.property('options.strategy', constants.AFFIRMATIVE)
+			})
 		})
 		it('throws an error when voters are not given', () => {
 			const fn = authorizer.registerPoll.bind(authorizer, 'user', 'edit', 'project', null, {})
