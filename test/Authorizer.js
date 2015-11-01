@@ -7,7 +7,10 @@ const sinon = require('sinon')
 
 const Authorizer = require('../lib/Authorizer')
 const PollSet = require('../lib/PollSet')
+const VoterMap = require('../lib/VoterMap')
 const constants = require('../lib/constants')
+const P = require('bluebird')
+const strategies = require('../lib/strategies')
 
 describe('Authorizer', () => {
 	describe('constructor', () => {
@@ -19,7 +22,7 @@ describe('Authorizer', () => {
 		it('creates empty voters', () => {
 			const authorizer = new Authorizer()
 			expect(authorizer).to.have.property('voters')
-				.that.is.an.instanceof(Map)
+				.that.is.an.instanceof(VoterMap)
 				.and.has.property('size', 0)
 		})
 		it('creates empty polls', () => {
@@ -96,7 +99,7 @@ describe('Authorizer', () => {
 			const fn = authorizer.registerPoll.bind(
 				authorizer, 'user', 'edit', 'project', ['bad', 'anotherbad'], {}
 			)
-			expect(fn).to.throw(Error, /Voter does not exist: bad,anotherbad/)
+			expect(fn).to.throw(Error, /Voter does not exist: bad, anotherbad/)
 		})
 	})
 	describe('#registerContextParser', () => {
@@ -227,6 +230,68 @@ describe('Authorizer', () => {
 		it('returns poll if matched', () => {
 			authorizer.registerPoll('user', 'edit', 'page', ['allow', 'allow'])
 			expect(authorizer.findPoll('user', 'edit', 'page')).to.exist
+		})
+	})
+	describe('#executeStrategy', () => {
+		let authorizer
+		beforeEach(() => {
+			authorizer = new Authorizer()
+		})
+		afterEach(() => {
+			if (strategies.affirmative.isSinonProxy) {
+				strategies.affirmative.restore()
+			}
+			if (strategies.consensus.isSinonProxy) {
+				strategies.consensus.restore()
+			}
+			if (strategies.unanimous.isSinonProxy) {
+				strategies.unanimous.restore()
+			}
+		})
+		it('returns a promise', () => {
+			expect(authorizer.executeStrategy(null, null))
+			.to.be.an.instanceof(P)
+		})
+		it('resolves false if no strategy found', () => {
+			return authorizer.executeStrategy(null, null)
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.false
+				})
+		})
+		it('picks the affirmative strategy', () => {
+			sinon.stub(strategies, 'affirmative')
+				.returns(true)
+			return authorizer.executeStrategy(constants.AFFIRMATIVE, null)
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.true
+					expect(strategies.affirmative.called).to.be.true
+				})
+		})
+		it('picks the consensus strategy', () => {
+			sinon.stub(strategies, 'consensus')
+				.returns(true)
+			return authorizer.executeStrategy(constants.CONSENSUS, null)
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.true
+					expect(strategies.consensus.called).to.be.true
+				})
+		})
+		it('picks the unanimous strategy', () => {
+			sinon.stub(strategies, 'unanimous')
+				.returns(true)
+			return authorizer.executeStrategy(constants.UNANIMOUS, null)
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.true
+					expect(strategies.unanimous.called).to.be.true
+				})
 		})
 	})
 })
