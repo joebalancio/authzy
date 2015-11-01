@@ -6,6 +6,7 @@ const expect = chai.expect
 const sinon = require('sinon')
 
 const Authorizer = require('../lib/Authorizer')
+const PollSet = require('../lib/PollSet')
 const constants = require('../lib/constants')
 
 describe('Authorizer', () => {
@@ -24,8 +25,8 @@ describe('Authorizer', () => {
 		it('creates empty polls', () => {
 			const authorizer = new Authorizer()
 			expect(authorizer).to.have.property('polls')
-				.that.is.an.instanceof(Array)
-				.and.is.empty
+				.that.is.an.instanceof(PollSet)
+			expect(authorizer.polls.isEmpty()).to.be.true
 		})
 	})
 	describe('#registerVoter', () => {
@@ -62,12 +63,22 @@ describe('Authorizer', () => {
 		})
 		it('registers a poll', () => {
 			authorizer.registerVoter('isProjectOwner', () => {})
-			expect(authorizer.polls).to.have.length(0)
+			expect(authorizer.polls.isEmpty()).to.be.true
 			authorizer.registerPoll('user', 'edit', 'project', ['isProjectOwner'], {})
-			expect(authorizer.polls).to.have.length(1)
-			authorizer.polls.forEach((poll, config) => {
+			expect(authorizer.polls.size).to.equal(1)
+			for (const poll of authorizer.polls) {
 				expect(poll).to.have.property('strategy', constants.AFFIRMATIVE)
-			})
+			}
+		})
+		it('throws error is registering a duplicate poll', () => {
+			authorizer.registerVoter('foo', () => {})
+			authorizer.registerPoll('user', 'edit', 'project', ['foo'])
+
+			const fn = () => {
+				authorizer.registerPoll('user', 'edit', 'project', ['foo'])
+			}
+
+			expect(fn).to.throw(Error, 'Cannot register duplicate poll')
 		})
 		it('throws an error when voters are not given', () => {
 			const fn = authorizer.registerPoll.bind(authorizer, 'user', 'edit', 'project', null, {})
