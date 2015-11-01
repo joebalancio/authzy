@@ -3,6 +3,8 @@
 
 const chai = require('chai')
 const expect = chai.expect
+const P = require('bluebird')
+const sinon = require('sinon')
 
 const constants = require('../lib/constants')
 const strategies = require('../lib/strategies')
@@ -86,6 +88,64 @@ describe('strategies', () => {
 				constants.ABSTAIN,
 			])
 			expect(result).to.be.false
+		})
+	})
+	describe('#execute', () => {
+		afterEach(() => {
+			if (strategies.affirmative.isSinonProxy) {
+				strategies.affirmative.restore()
+			}
+			if (strategies.consensus.isSinonProxy) {
+				strategies.consensus.restore()
+			}
+			if (strategies.unanimous.isSinonProxy) {
+				strategies.unanimous.restore()
+			}
+		})
+		it('returns a promise', () => {
+			expect(strategies.execute(null, null))
+			.to.be.an.instanceof(P)
+		})
+		it('resolves false if no strategy found', () => {
+			return strategies.execute(null, null)
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.false
+				})
+		})
+		it('picks the affirmative strategy', () => {
+			sinon.stub(strategies, 'affirmative')
+				.returns(true)
+			return strategies.execute(constants.AFFIRMATIVE, null)
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.true
+					expect(strategies.affirmative.called).to.be.true
+				})
+		})
+		it('picks the consensus strategy', () => {
+			sinon.stub(strategies, 'consensus')
+				.returns(true)
+			return strategies.execute(constants.CONSENSUS, null)
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.true
+					expect(strategies.consensus.called).to.be.true
+				})
+		})
+		it('picks the unanimous strategy', () => {
+			sinon.stub(strategies, 'unanimous')
+				.returns(true)
+			return strategies.execute(constants.UNANIMOUS, null)
+				.reflect()
+				.then((i) => {
+					expect(i.isFulfilled()).to.be.true
+					expect(i.value()).to.be.true
+					expect(strategies.unanimous.called).to.be.true
+				})
 		})
 	})
 })

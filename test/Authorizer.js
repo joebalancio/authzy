@@ -142,6 +142,11 @@ describe('Authorizer', () => {
 				return constants.ABSTAIN
 			})
 		})
+		afterEach(() => {
+			if (strategies.execute.isSinonProxy) {
+				strategies.execute.restore()
+			}
+		})
 		it('returns false by default when no polls are matched', () => {
 			return authorizer.decide()
 				.reflect()
@@ -153,9 +158,12 @@ describe('Authorizer', () => {
 		it('resolves with true when a matched poll allow', () => {
 			authorizer.registerPoll(null, null, null, ['allow'])
 
+			const spy = sinon.spy(authorizer.voters, 'validateNames')
+
 			return authorizer.decide()
 				.reflect()
 				.then((i) => {
+					expect(spy.called).to.be.true
 					expect(i.isFulfilled()).to.be.true
 					expect(i.value()).to.be.true
 				})
@@ -175,14 +183,12 @@ describe('Authorizer', () => {
 				strategy: constants.CONSENSUS,
 			})
 
-			const spy = sinon.spy(authorizer, 'findPoll')
+			const spy = sinon.spy(strategies, 'execute')
 
 			return authorizer.decide()
 				.reflect()
 				.then(() => {
-					expect(spy.called).to.be.true
-					const poll = spy.firstCall.returnValue
-					expect(poll.strategy).to.equal(constants.CONSENSUS)
+					expect(spy.calledWith(constants.CONSENSUS)).to.be.true
 				})
 		})
 		it('decides by the affirmative strategy', () => {
@@ -190,14 +196,12 @@ describe('Authorizer', () => {
 				strategy: constants.AFFIRMATIVE,
 			})
 
-			const spy = sinon.spy(authorizer, 'findPoll')
+			const spy = sinon.spy(strategies, 'execute')
 
 			return authorizer.decide()
 				.reflect()
 				.then(() => {
-					expect(spy.called).to.be.true
-					const poll = spy.firstCall.returnValue
-					expect(poll.strategy).to.equal(constants.AFFIRMATIVE)
+					expect(spy.calledWith(constants.AFFIRMATIVE)).to.be.true
 				})
 		})
 		it('decides by the unanimous strategy', () => {
@@ -205,92 +209,12 @@ describe('Authorizer', () => {
 				strategy: constants.UNANIMOUS,
 			})
 
-			const spy = sinon.spy(authorizer, 'findPoll')
+			const spy = sinon.spy(strategies, 'execute')
 
 			return authorizer.decide()
 				.reflect()
 				.then(() => {
-					expect(spy.called).to.be.true
-					const poll = spy.firstCall.returnValue
-					expect(poll.strategy).to.equal(constants.UNANIMOUS)
-				})
-		})
-	})
-	describe('#findPoll', () => {
-		let authorizer
-		beforeEach(() => {
-			authorizer = new Authorizer()
-			authorizer.registerVoter('allow', () => {
-				return constants.ALLOW
-			})
-		})
-		it('returns false by default when no polls are matched', () => {
-			expect(authorizer.findPoll()).to.be.undefined
-		})
-		it('returns poll if matched', () => {
-			authorizer.registerPoll('user', 'edit', 'page', ['allow', 'allow'])
-			expect(authorizer.findPoll('user', 'edit', 'page')).to.exist
-		})
-	})
-	describe('#executeStrategy', () => {
-		let authorizer
-		beforeEach(() => {
-			authorizer = new Authorizer()
-		})
-		afterEach(() => {
-			if (strategies.affirmative.isSinonProxy) {
-				strategies.affirmative.restore()
-			}
-			if (strategies.consensus.isSinonProxy) {
-				strategies.consensus.restore()
-			}
-			if (strategies.unanimous.isSinonProxy) {
-				strategies.unanimous.restore()
-			}
-		})
-		it('returns a promise', () => {
-			expect(authorizer.executeStrategy(null, null))
-			.to.be.an.instanceof(P)
-		})
-		it('resolves false if no strategy found', () => {
-			return authorizer.executeStrategy(null, null)
-				.reflect()
-				.then((i) => {
-					expect(i.isFulfilled()).to.be.true
-					expect(i.value()).to.be.false
-				})
-		})
-		it('picks the affirmative strategy', () => {
-			sinon.stub(strategies, 'affirmative')
-				.returns(true)
-			return authorizer.executeStrategy(constants.AFFIRMATIVE, null)
-				.reflect()
-				.then((i) => {
-					expect(i.isFulfilled()).to.be.true
-					expect(i.value()).to.be.true
-					expect(strategies.affirmative.called).to.be.true
-				})
-		})
-		it('picks the consensus strategy', () => {
-			sinon.stub(strategies, 'consensus')
-				.returns(true)
-			return authorizer.executeStrategy(constants.CONSENSUS, null)
-				.reflect()
-				.then((i) => {
-					expect(i.isFulfilled()).to.be.true
-					expect(i.value()).to.be.true
-					expect(strategies.consensus.called).to.be.true
-				})
-		})
-		it('picks the unanimous strategy', () => {
-			sinon.stub(strategies, 'unanimous')
-				.returns(true)
-			return authorizer.executeStrategy(constants.UNANIMOUS, null)
-				.reflect()
-				.then((i) => {
-					expect(i.isFulfilled()).to.be.true
-					expect(i.value()).to.be.true
-					expect(strategies.unanimous.called).to.be.true
+					expect(spy.calledWith(constants.UNANIMOUS)).to.be.true
 				})
 		})
 	})
