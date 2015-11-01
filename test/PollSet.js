@@ -7,7 +7,7 @@ const expect = chai.expect
 const PollSet = require('../lib/PollSet')
 const Poll = require('../lib/Poll')
 
-describe.only('PollSet', () => {
+describe('PollSet', () => {
 	let polls
 	const poll = new Poll('a', 'b', 'c', ['d'])
 	beforeEach(() => {
