@@ -29,4 +29,18 @@ describe('authzy', () => {
 		expect(authzy.constants).to.equal(constants)
 		expect(Object.isFrozen(constants)).to.be.true
 	})
+	describe('voters', () => {
+		it('exports default voters', () => {
+			expect(authzy.voters).to.be.an('object')
+		})
+		it('exports default allow voter', () => {
+			expect(authzy.voters.allow()).to.equal(constants.ALLOW)
+		})
+		it('exports default deny voter', () => {
+			expect(authzy.voters.deny()).to.equal(constants.DENY)
+		})
+		it('exports default abstain voter', () => {
+			expect(authzy.voters.abstain()).to.equal(constants.ABSTAIN)
+		})
+	})
 })

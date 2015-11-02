@@ -8,3 +8,15 @@ module.exports = (options) => {
 }
 
 module.exports.constants = Object.freeze(constants)
+
+module.exports.voters = Object.freeze({
+	allow() {
+		return constants.ALLOW
+	},
+	deny() {
+		return constants.DENY
+	},
+	abstain() {
+		return constants.ABSTAIN
+	},
+})
