@@ -81,10 +81,18 @@ describe('strategies', () => {
 			])
 			expect(result).to.be.false
 		})
-		it('returns false if at least one vote is abstain', () => {
+		it('returns true if mixed allow and abstain', () => {
 			const result = strategies.unanimous([
 				constants.ALLOW,
 				constants.ALLOW,
+				constants.ABSTAIN,
+			])
+			expect(result).to.be.true
+		})
+		it('returns false if all abstain', () => {
+			const result = strategies.unanimous([
+				constants.ABSTAIN,
+				constants.ABSTAIN,
 				constants.ABSTAIN,
 			])
 			expect(result).to.be.false
