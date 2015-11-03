@@ -26,6 +26,13 @@ describe('strategies', () => {
 			])
 			expect(result).to.be.false
 		})
+		it('returns false if all abstain', () => {
+			const result = strategies.affirmative([
+				constants.ABSTAIN,
+				constants.ABSTAIN,
+			])
+			expect(result).to.be.false
+		})
 	})
 
 	describe('.consensus', () => {
@@ -58,6 +65,22 @@ describe('strategies', () => {
 			const result = strategies.consensus([
 				constants.ABSTAIN,
 				constants.ABSTAIN,
+				constants.ABSTAIN,
+			])
+			expect(result).to.be.false
+		})
+		it('returns true if there are a mix of allow and abstain', () => {
+			const result = strategies.consensus([
+				constants.ALLOW,
+				constants.ALLOW,
+				constants.ABSTAIN,
+			])
+			expect(result).to.be.true
+		})
+		it('returns false if there are a mix of deny and abstain', () => {
+			const result = strategies.consensus([
+				constants.DENY,
+				constants.DENY,
 				constants.ABSTAIN,
 			])
 			expect(result).to.be.false
