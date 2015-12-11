@@ -9,7 +9,6 @@ const Authorizer = require('../lib/Authorizer')
 const PollSet = require('../lib/PollSet')
 const VoterMap = require('../lib/VoterMap')
 const constants = require('../lib/constants')
-const P = require('bluebird')
 const strategies = require('../lib/strategies')
 
 describe('Authorizer', () => {
@@ -216,6 +215,21 @@ describe('Authorizer', () => {
 				.then(() => {
 					expect(spy.calledWith(constants.UNANIMOUS)).to.be.true
 				})
+		})
+	})
+	describe('events', () => {
+		context('when a poll is not found', () => {
+			it('emits a pollNotFound', () => {
+				const authorizer = new Authorizer()
+				let emitted = false
+				authorizer.on('pollNotFound', () => {
+					emitted = true
+				})
+				return authorizer.decide()
+				.then(() => {
+					expect(emitted).to.be.true
+				})
+			})
 		})
 	})
 })
