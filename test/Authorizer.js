@@ -9,7 +9,6 @@ const Authorizer = require('../lib/Authorizer')
 const PollSet = require('../lib/PollSet')
 const VoterMap = require('../lib/VoterMap')
 const constants = require('../lib/constants')
-const P = require('bluebird')
 const strategies = require('../lib/strategies')
 
 describe('Authorizer', () => {
@@ -216,6 +215,61 @@ describe('Authorizer', () => {
 				.then(() => {
 					expect(spy.calledWith(constants.UNANIMOUS)).to.be.true
 				})
+		})
+	})
+	describe('events', () => {
+		context('when a poll is not found', () => {
+			it('emits a pollNotFound', () => {
+				const authorizer = new Authorizer()
+				let emitted = false
+				authorizer.on('pollNotFound', () => {
+					emitted = true
+				})
+				return authorizer.decide()
+				.then(() => {
+					expect(emitted).to.be.true
+				})
+			})
+		})
+		context('when a decision is made', () => {
+			it('emits voterDecision', () => {
+				const authorizer = new Authorizer()
+				authorizer.registerVoter('voter', () => {
+					return constants.ALLOW
+				})
+
+				let emitted = false
+				authorizer.on('voterDecision', () => {
+					emitted = true
+				})
+
+				authorizer.registerPoll(null, null, null, ['voter'])
+
+				return authorizer.decide()
+				.then(() => {
+					expect(emitted).to.be.true
+				})
+			})
+		})
+		context('when a decision produces an error', () => {
+			it('emits voterDecision', () => {
+				const authorizer = new Authorizer()
+				authorizer.registerVoter('voter', () => {
+					throw Error('external failure')
+				})
+
+				let emitted = false
+				authorizer.on('voterError', () => {
+					emitted = true
+				})
+
+				authorizer.registerPoll(null, null, null, ['voter'])
+
+				return authorizer.decide()
+				.catch(() => {
+					expect(emitted).to.be.true
+				})
+			})
 		})
 	})
 })

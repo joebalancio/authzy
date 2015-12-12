@@ -4,7 +4,8 @@
   "description": "Voting-based Authorization",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive test"
+    "test": "mocha --recursive test",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
   "homepage": "https://github.com/joebalancio/authzy#readme",
   "devDependencies": {
     "chai": "^3.4.0",
+    "eslint": "^1.10.3",
     "mocha": "^2.3.3",
     "sinon": "^1.17.2"
   },

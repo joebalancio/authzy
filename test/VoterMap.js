@@ -125,4 +125,40 @@ describe('VoterMap', () => {
 				})
 		})
 	})
+	describe('events', () => {
+		context('when a voter makes a decision', () => {
+			it('emits voterDecision', () => {
+				voters.set('foo', () => constants.ALLOW)
+
+				let emitted = false
+				voters.on('voterDecision', (name, decision) => {
+					emitted = true
+					expect(name).to.equal('foo')
+					expect(decision).to.equal(constants.ALLOW)
+				})
+				return voters.execute()
+				.then(() => {
+					expect(emitted).to.be.true
+				})
+			})
+		})
+		context('when a voter has an error', () => {
+			it('emits voterError', () => {
+				voters.set('foo', () => {
+					throw new Error('fail')
+				})
+
+				let emitted = false
+				voters.on('voterError', (name, error) => {
+					emitted = true
+					expect(name).to.equal('foo')
+					expect(error).to.be.an.instanceof(Error)
+				})
+				return voters.execute()
+				.catch(() => {
+					expect(emitted).to.be.true
+				})
+			})
+		})
+	})
 })
