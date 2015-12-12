@@ -222,10 +222,13 @@ describe('Authorizer', () => {
 			it('emits a pollNotFound', () => {
 				const authorizer = new Authorizer()
 				let emitted = false
-				authorizer.on('pollNotFound', () => {
+				authorizer.on('pollNotFound', (subject, action, resource) => {
 					emitted = true
+					expect(subject).to.equal('a')
+					expect(action).to.equal('b')
+					expect(resource).to.equal('c')
 				})
-				return authorizer.decide()
+				return authorizer.decide('a', 'b', 'c')
 				.then(() => {
 					expect(emitted).to.be.true
 				})
