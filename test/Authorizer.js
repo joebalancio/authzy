@@ -231,5 +231,45 @@ describe('Authorizer', () => {
 				})
 			})
 		})
+		context('when a decision is made', () => {
+			it('emits voterDecision', () => {
+				const authorizer = new Authorizer()
+				authorizer.registerVoter('voter', () => {
+					return constants.ALLOW
+				})
+
+				let emitted = false
+				authorizer.on('voterDecision', () => {
+					emitted = true
+				})
+
+				authorizer.registerPoll(null, null, null, ['voter'])
+
+				return authorizer.decide()
+				.then(() => {
+					expect(emitted).to.be.true
+				})
+			})
+		})
+		context('when a decision produces an error', () => {
+			it('emits voterDecision', () => {
+				const authorizer = new Authorizer()
+				authorizer.registerVoter('voter', () => {
+					throw Error('external failure')
+				})
+
+				let emitted = false
+				authorizer.on('voterError', () => {
+					emitted = true
+				})
+
+				authorizer.registerPoll(null, null, null, ['voter'])
+
+				return authorizer.decide()
+				.catch(() => {
+					expect(emitted).to.be.true
+				})
+			})
+		})
 	})
 })
